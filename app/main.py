@@ -5,3 +5,26 @@ app = FastAPI()
 @app.get("/")
 def root():
     return {"message": "Market Analysis API is running."}
+
+#What happens when a clients ask for a API request for VWAP calculation?
+#Client makes a request
+#Step 1:
+#GET /vwap?symbol=SPX
+
+#Step 2: FastAPI recieves Request
+#route function runs:
+@app.get("/vwap")
+def get_vwap(symbol: str):
+    return calculated_vwap(symbol)
+
+#Step 3: Data Retrieval
+#Fetch recent candle data from: Database
+#Vwap requires: Price, Volume, Times Series
+
+
+#Step 4: VWAP Calculation
+#Typical Price = (High + Low + Close) / 3
+#VWAP = sum(typicalPrice * Volume) / sum(Volume)
+
+#Step 5: Response is sent back to Client
+#FastAPI sends JSON response with VWAP value
