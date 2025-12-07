@@ -9,11 +9,9 @@ def root():
     return {"message": "Market Analysis API is running."}
 
 # 3. VWAP ENDPOINT
-@app.get("/vwap")
-def get_vwap(symbol: str):
-    mock_candles = [
-        {"high": 50, "low": 40, "close": 48, "volume": 20},
-        {"high": 52, "low": 47, "close": 50, "volume": 35},
-        {"high": 55, "low": 53, "close": 54, "volume": 15}
-    ]
-    return {"symbol": symbol, "vwap": calculate_vwap(mock_candles)}
+@app.post("/vwap")
+def vwap_endpoint(candles: list[dict]):
+    """
+    Calculate VWAP from provided candle data
+    """ 
+    return {"vwap": calculate_vwap(candles)}
