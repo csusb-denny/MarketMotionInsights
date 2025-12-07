@@ -3,7 +3,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 #1. VWAP Calculation Function
-def get_vwap(symbol: str):
+def calculate_vwap(candles):
     """
     Calculate the Volume Weighted Average Price (VWAP) from a list of candle data.
 
@@ -33,25 +33,31 @@ def get_vwap(symbol: str):
         - VWAP weights each candle's price by the volume traded at that price.
         - VWAP resets each session (typically at market open).
     """
-    #Sum of (Typical Price* Volume)
-    total_PriceVolume = 0 
-    #Sum of Volume
-    Volume = 0
+    #Sum-of-(Typical-Price*Volume)
+    total_PriceVolume = 0
 
-    #loop through each candle in the dataset
+    #Sum-of-Volume
+    total_Volume = 0
+
+    #Loop-through-each-candle-in-the-dataset
     for c in candles:
-        #Calculate Typical Price
+        #Calculate-Typical-Price
         typical_price = (c['high'] + c['low'] + c['close']) / 3
-        #Volume for the candle
-        total_Volume += c['volume']
-        #Accumulate Price * Volume
-        total_PriceVolume += typical_price * Volume 
-        #Accumulate Volume
+
+        #Volume-for-the-candle
+        Volume = c['volume']
+
+        #Accumulate-Price*Volume
+        total_PriceVolume += typical_price * Volume
+
+        #Accumulate-Volume
         total_Volume += Volume
-    #prevent division by zero 
+
+    #Prevent-division-by-zero
     if total_Volume == 0:
-        return None 
-    #Return VWAP value
+        return None
+
+    #Return-VWAP-value
     return total_PriceVolume / total_Volume
 
 #2. Root Endpointer
