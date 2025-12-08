@@ -67,3 +67,53 @@ def get_realtime_quote(symbol: str):
         "previous_close": data.get('pc'),
         "timestamp": data.get('t')
     }
+
+
+def get_candles(symbol: str, resolution: str = "1"):
+    """
+    Retrieve historical candle data for the specified symbol.
+
+    Parameters:
+    symbol : str
+        Ticker symbol to query (e.g., "AAPL", "TSLA", "BTC-USD").
+    resolution : str
+        Time resolution of the candles. Options include:
+        "1" - 1 minute
+        "5" - 5 minutes
+        "15" - 15 minutes
+        "30" - 30 minutes
+        "60" - 1 hour
+        "D" - Daily
+        "W" - Weekly
+        "M" - Monthly
+    Returns:
+    list[dict]
+        A list of dictionaries, each containing:
+            - 'timestamp' : Unix timestamp of the candle.
+            - 'open' : Opening price.
+            - 'high' : High price.
+            - 'low' : Low price.
+            - 'close' : Closing price.
+            - 'volume' : Volume traded. 
+    """
+    import time
+    now = int(time.time())
+    past = now - 3600  # last hour
+
+    data = client.stock_candles(symbol, resolution, past, now)
+
+    # Validate Finnhub response
+    if not data or data.get("s") != "ok":
+        print("Finnhub error:", data)
+        return []
+
+    candles = []
+    for h, l, c, v in zip(data['h'], data['l'], data['c'], data['v']):
+        candles.append({
+            "high": h,
+            "low": l,
+            "close": c,
+            "volume": v
+        })
+
+    return candles
