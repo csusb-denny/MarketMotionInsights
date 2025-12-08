@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from app.indicators.vwap import calculate_vwap
 from app.utils.candle_generator import generate_candles
+from app.services.finnhub_client import get_realtime_quote
 
 app = FastAPI()
 
@@ -25,3 +26,11 @@ def generate(count: int = 10):
     """ 
     candles = generate_candles(count)
     return {"candles": candles}
+
+@app.get("/quote/{symbol}")
+def quote(symbol: str):
+    """
+    Get real-time quote for a given symbol
+    """ 
+    quote_data = get_realtime_quote(symbol.upper())
+    return {"quote": quote_data}
