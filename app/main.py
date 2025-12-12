@@ -19,7 +19,7 @@ def vwap_endpoint(candles: list[dict]):
     """ 
     return {"vwap": calculate_vwap(candles)}
 
-#3. Candle Generation Endpoint
+#3.Candle Generation Endpoint
 @app.get("/generate_candles")
 def generate(count: int = 10):
     """
@@ -36,28 +36,50 @@ def quote(symbol: str):
     quote_data = get_realtime_quote(symbol.upper())
     return {"quote": quote_data}
 
-#4. VWAP from Real Data Endpoint
+#4.VWAP from Real Data Endpoint
 @app.get("/vwap/{symbol}")
 def vwap_realtime(symbol: str, resolution: str = "1", loopback_minutes: int = 30):
-
     symbol = symbol.upper()
 
-    #1. Pull real-time quote from Finnhub
-    quote = get_realtime_quote(symbol)
-    #2. Create a new candle from the quote
-    candles = get_candles(symbol = symbol, resolution = resolution, loopback_minutes= loopback_minutes)
-    #3. Validate candle data
-    if not candles:
-        return {"error": "No candle data available for symbol."}
-    #4. Calculate VWAP using existing function
-    vwap_value = calculate_vwap(candles)
+    # 1. Try to fetch historical candles
+    candles = get_candles(
+        symbol=symbol,
+        resolution=resolution,
+        loopback_minutes=loopback_minutes
+    )
+
+    # 2. If candles exist, calculate VWAP normally
+    if candles and len(candles) > 1:
+        vwap_value = calculate_vwap(candles)
+        source = "finnhub_candles"
+        calculation = "VWAP calculated using historical candles from Finnhub."
+        candles_used = len(candles)
+
+    else:
+        # 3. Fallback to real-time quote
+        quote = get_realtime_quote(symbol)
+
+        if not quote or quote.get("current") is None:
+            return {"error": f"Unable to retrieve data for {symbol}"}
+
+        synthetic_candle = [{
+            "high": quote["high"],
+            "low": quote["low"],
+            "close": quote["current"],
+            "volume": quote.get("volume", 1)
+        }]
+
+        vwap_value = calculate_vwap(synthetic_candle)
+        source = "finnhub_quote_fallback"
+        calculation = "VWAP calculated from real-time quote fallback."
+        candles_used = 1
 
     return {
         "symbol": symbol,
         "vwap": vwap_value,
-        "candles_used": len(candles),
-        "resolution": f"{resolution} m",
-        "lookback_minutes": loopback_minutes,
-        "source": "Finnhub",
-        "calculation": "VWAP calculated using historical candles from Finnhub."
+        "candles_used": candles_used,
+        "resolution": f"{resolution}m",
+        "loopback_minutes": loopback_minutes,
+        "source": source,
+        "calculation": calculation
     }

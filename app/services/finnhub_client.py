@@ -100,11 +100,14 @@ def get_candles(symbol: str, resolution: str = "1", loopback_minutes: int = 30):
     now = int(time.time()) # current time in seconds
     past = now - (loopback_minutes * 60)  # loopback in seconds
 
-    data = client.stock_candles(symbol, resolution, past, now)
-
-    if data.get("s") != "ok":   # if status is not ok, return empty list
+    try:
+        data = client.stock_candles(symbol, resolution, past, now)
+    except Exception as e:
+        print(f"Error fetching candles for {symbol}: {e}")
+        return [] 
+    if not data or data.get("s") != "ok":
+        print("Finnhub returned invalid data:", data)
         return []
-    
 
     candles = []
     for h, l, c, v in zip(data['h'], data['l'], data['c'], data['v']):
@@ -112,7 +115,7 @@ def get_candles(symbol: str, resolution: str = "1", loopback_minutes: int = 30):
             "high": h,
             "low": l,
             "close": c,
-            "volume": v
+            "volume": v or 1
         })
 
     return candles
