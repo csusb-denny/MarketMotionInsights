@@ -69,7 +69,7 @@ def get_realtime_quote(symbol: str):
     }
 
 
-def get_candles(symbol: str, resolution: str = "1"):
+def get_candles(symbol: str, resolution: str = "1", loopback_minutes: int = 30):
     """
     Retrieve historical candle data for the specified symbol.
 
@@ -97,15 +97,14 @@ def get_candles(symbol: str, resolution: str = "1"):
             - 'volume' : Volume traded. 
     """
     import time
-    now = int(time.time())
-    past = now - 3600  # last hour
+    now = int(time.time()) # current time in seconds
+    past = now - (loopback_minutes * 60)  # loopback in seconds
 
     data = client.stock_candles(symbol, resolution, past, now)
 
-    # Validate Finnhub response
-    if not data or data.get("s") != "ok":
-        print("Finnhub error:", data)
+    if data.get("s") != "ok":   # if status is not ok, return empty list
         return []
+    
 
     candles = []
     for h, l, c, v in zip(data['h'], data['l'], data['c'], data['v']):

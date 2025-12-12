@@ -38,17 +38,17 @@ def quote(symbol: str):
 
 #4. VWAP from Real Data Endpoint
 @app.get("/vwap/{symbol}")
-def vwap_realtime(symbol: str):
+def vwap_realtime(symbol: str, resolution: str = "1", loopback_minutes: int = 30):
 
     symbol = symbol.upper()
 
-    # 1. Pull real-time quote from Finnhub
+    #1. Pull real-time quote from Finnhub
     quote = get_realtime_quote(symbol)
 
     if not quote or "current" not in quote or quote["current"] is None:
         return {"error": f"Could not retrieve quote for {symbol}"}
 
-    # 2. Convert quote into a synthetic candle
+    #2. Convert quote into a synthetic candle
     candle = {
         "high": quote["high"],
         "low": quote["low"],
@@ -56,19 +56,19 @@ def vwap_realtime(symbol: str):
         "volume": quote.get("volume", 1)  # If no volume, use 1 so math doesn't break
     }
 
-    # 3. Get existing candle list or create a new one
+    #3. Get existing candle list or create a new one
     candles = app.state.candles.get(symbol, [])
 
-    # Add the new candle
+    #Add the new candle
     candles.append(candle)
 
-    # 4. Rolling window (use last 30 candles)
+    #4. Rolling window (use last 30 candles)
     candles = candles[-30:]
 
-    # Save back to memory
+    #Save back to memory
     app.state.candles[symbol] = candles
 
-    # 5. Calculate VWAP using your existing function
+    #5. Calculate VWAP using your existing function
     vwap_value = calculate_vwap(candles)
 
     return {
