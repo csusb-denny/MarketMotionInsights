@@ -1,13 +1,18 @@
-# MarketMotionInsights
+MarketMotionInsights
 
 A realtime SPX/ES analytics microservice with alerts, VWAP signals, and probability engine
 
-# VWAP Endpoint Flow:
+This project is a backend Market Analytics API built with FastAPI that computes VWAP (Volume Weighted Average Price) using live market data from Finnhub.
+It is designed to be production-aware, handling real-world API limitations gracefully while still delivering consistent analytics output.
 
-# 1. Client calls /vwap?symbol=...
+🛠 Tech Stack
 
-# 2. API retrieves candle data for the symbol
+Python
 
-# 3. Passes data into calculate_vwap()
+FastAPI
 
-# 4. Returns the VWAP as JSON
+Finnhub API
+
+Uvicorn
+
+Swagger / OpenAPI
